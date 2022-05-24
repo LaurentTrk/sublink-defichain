@@ -176,8 +176,8 @@ impl_opaque_keys! {
 
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("sublink-parachain"),
-	impl_name: create_runtime_str!("sublink-parachain"),
+	spec_name: create_runtime_str!("sublink-defichain"),
+	impl_name: create_runtime_str!("sublink-defichain"),
 	authoring_version: 1,
 	spec_version: 1,
 	impl_version: 0,
@@ -208,7 +208,7 @@ pub const UNIT: Balance = 1_000_000_000_000;
 pub const MILLIUNIT: Balance = 1_000_000_000;
 pub const MICROUNIT: Balance = 1_000_000;
 
-/// The existential deposit. Set to 1/10 of the Connected Relay Chain.
+/// The existential deposit. Set to 1/10 of the Connected Relay Ch	type FeedReceiver = SubLinkParachainOracle;ain.
 pub const EXISTENTIAL_DEPOSIT: Balance = MILLIUNIT;
 
 /// We assume that ~5% of the block weight is consumed by `on_initialize` handlers. This is
@@ -493,6 +493,12 @@ impl pallet_chainlink_feed::Config for Runtime {
 	type WeightInfo = ();
 }
 
+impl sublink_parachain_oracle::Config for Runtime {
+	type Event = Event;
+	type Oracle = ChainlinkFeed;
+	type FeedRequester = SubLinkXCM;
+}
+
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
 parameter_types! {
@@ -538,7 +544,7 @@ impl pallet_contracts::Config for Runtime {
 	type DepositPerByte = DepositPerByte;
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-	type ChainExtension = runtime_chainlink_ink_extension::ChainlinkExtension<Self>;
+	type ChainExtension = sublink_ink_runtime::SubLinkInkExtension<Self>;
 	type DeletionQueueDepth = DeletionQueueDepth;
 	type DeletionWeightLimit = DeletionWeightLimit;
 	type Schedule = Schedule;
@@ -549,7 +555,8 @@ impl pallet_contracts::Config for Runtime {
 /// Configure the pallet template in pallets/template.
 impl pallet_template::Config for Runtime {
 	type Event = Event;
-	type Oracle = ChainlinkFeed;
+	// We use our parachain Oracle
+	type Oracle = SubLinkParachainOracle;
 }
 
 impl pallet_sudo::Config for Runtime {
@@ -596,12 +603,11 @@ construct_runtime!(
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip = 71,
 		Contracts: pallet_contracts = 72,
 		SubLinkXCM: sublink_xcm = 73,
-
+		SubLinkParachainOracle: sublink_parachain_oracle = 75,
+		
 		// Template
 		TemplatePallet: pallet_template::{Pallet, Call, Storage, Event<T>}  = 80,
 
-		// Tests XCM
-		Spambot: cumulus_ping::{Pallet, Call, Storage, Event<T>} = 99,
 	}
 );
 

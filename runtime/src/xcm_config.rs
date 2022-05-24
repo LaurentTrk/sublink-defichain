@@ -1,6 +1,6 @@
 use super::{
 	AccountId, Balances, Call, Event, Origin, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime,
-	WeightToFee, XcmpQueue, ChainlinkFeed
+	WeightToFee, XcmpQueue, ChainlinkFeed, SubLinkParachainOracle
 };
 use core::marker::PhantomData;
 use frame_support::{
@@ -226,11 +226,5 @@ impl sublink_xcm::Config for Runtime {
 	type Call = Call;
 	type XcmSender = XcmRouter;
 	type Oracle = ChainlinkFeed;
+	type FeedReceiver = SubLinkParachainOracle;
   }
-
-impl cumulus_ping::Config for Runtime {
-	type Event = Event;
-	type Origin = Origin;
-	type Call = Call;
-	type XcmSender = XcmRouter;
-}
